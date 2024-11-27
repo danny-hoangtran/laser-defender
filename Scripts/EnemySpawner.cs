@@ -34,8 +34,8 @@ public class EnemySpawner : MonoBehaviour {
 
         for (int i = 0; i < enemyNumber; i++) {
             GameObject enemyShip = Instantiate(enemyPrefab, waypoints[0].transform.position, Quaternion.identity);
-            enemyShip.GetComponent<EnmeyPathing>().SetWaypoints(waypoints);
-            enemyShip.GetComponent<EnmeyPathing>().SetVelocity(velocity);
+            enemyShip.GetComponent<EnemyPathing>().SetWaypoints(waypoints);
+            enemyShip.GetComponent<EnemyPathing>().SetVelocity(velocity);
             yield return new WaitForSeconds(spawnTimer);
         }
     }

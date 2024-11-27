@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class EnmeyPathing : MonoBehaviour {
+public class EnemyPathing : MonoBehaviour {
     private float velocity;
     private int waypointIndex;
     private List<Transform> waypoints;
