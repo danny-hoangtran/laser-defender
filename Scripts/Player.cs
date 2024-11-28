@@ -11,10 +11,12 @@ public class Player : MonoBehaviour {
     private float minHorizontalBoundary, maxHorizontalBoundary, minVerticalBoundary, maxVerticalBoundary;
     private Coroutine fireCoroutine;
     private bool fireEnabled;
+    private PlayerAudio playerAudio;
 
     public void Start() {
         fireEnabled = true;
         SetBoundaries();
+        playerAudio = GetComponent<PlayerAudio>();
     }
 
     public void FixedUpdate() {
@@ -51,7 +53,8 @@ public class Player : MonoBehaviour {
     IEnumerator FireCoroutine() {
         while (Input.GetKey(KeyCode.Space)) { 
             if (fireEnabled) { 
-                GameObject laserObject = Instantiate(laserPrefab, transform.position, Quaternion.identity); 
+                GameObject laserObject = Instantiate(laserPrefab, transform.position, Quaternion.identity);
+                playerAudio.PlayShootSFX();
                 laserObject.transform.position = new Vector2(laserObject.transform.position.x, laserObject.transform.position.y + 0.8f); 
                 fireEnabled = false; 
                 yield return new WaitForSeconds(fireRate); 
@@ -65,9 +68,20 @@ public class Player : MonoBehaviour {
 
     private void OnTriggerEnter2D(Collider2D collision) {
         DamageDealer damageDealer = collision.gameObject.GetComponent<DamageDealer>();
-        damageDealer.Hit();
         maxHealth -= damageDealer.GetDamage();
 
-        if(maxHealth <= 0) { Destroy(gameObject); }
+        if(collision.gameObject.tag == "Laser") {
+            damageDealer.Hit();
+        }
+
+        if(maxHealth <= 0) {
+            playerAudio.PlayDestroySFX();
+            Destroy(gameObject, .2f);
+            SceneLoader.GetInstance().LoadNextScene();
+        }
+    }
+
+    public float GetHealth() {
+        return maxHealth;
     }
 }

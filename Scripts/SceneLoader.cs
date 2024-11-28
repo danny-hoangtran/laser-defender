@@ -1,3 +1,4 @@
+using System.Drawing;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -13,10 +14,10 @@ public class SceneLoader : MonoBehaviour{
     }
 
     private void Awake() {
-        if(instance == null) {
+        if (instance == null) {
             instance = this;
             DontDestroyOnLoad(gameObject);
-        } else {
+        } else if (instance != this) {
             Destroy(gameObject);
         }
     }

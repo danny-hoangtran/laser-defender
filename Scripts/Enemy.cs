@@ -1,42 +1,53 @@
 using UnityEngine;
+using System.Collections.Generic;
+using System.Collections;
 
 public class Enemy : MonoBehaviour {
     [SerializeField] float minTimeBetweenShots = 0.5f;
     [SerializeField] float maxTimeBetweenShots = 2f;
     [SerializeField] GameObject enemyLaserPrefab;
+    [SerializeField] GameObject explosionEffectPrefab;
     [SerializeField] int maxHealth = 300;
-
-
-    private float fireTimeCounter;
-    private float timeCounter;
+  
+    private float fireRate;
+    private int enemyDestroyPoints = 50;
+    private EnemyAudio enemyAudio;
 
     void Start() {
-        timeCounter = 0;
-        fireTimeCounter = Random.Range(minTimeBetweenShots, maxTimeBetweenShots);    
+        StartCoroutine(Fire());
+        enemyAudio = GetComponent<EnemyAudio>();
     }
 
-    // Update is called once per frame
-    void Update() {
-        Fire();
-    }
-
-    private void Fire() {
-        timeCounter = timeCounter + Time.deltaTime;
-        if(timeCounter >= fireTimeCounter) {
+    IEnumerator Fire() {
+        while(true) {
+            fireRate = Random.Range(minTimeBetweenShots, maxTimeBetweenShots);
+            yield return new WaitForSeconds(fireRate);
             GameObject laserObject = Instantiate(enemyLaserPrefab, transform.position, Quaternion.identity);
+            enemyAudio.PlayShootSFX();
             laserObject.transform.position = new Vector2(laserObject.transform.position.x, laserObject.transform.position.y - 0.8f);
-            fireTimeCounter = Random.Range(minTimeBetweenShots, maxTimeBetweenShots);
-            timeCounter = 0;
-        }
+        }    
     }
 
     private void OnTriggerEnter2D(Collider2D collision) {
-        DamageDealer damageDealer = collision.gameObject.GetComponent<DamageDealer>();
-        damageDealer.Hit();
-        maxHealth -= damageDealer.GetDamage();
+        if(collision.gameObject.tag == "Laser") {
+            DamageDealer damageDealer = collision.gameObject.GetComponent<DamageDealer>();
+            damageDealer.Hit();
+            maxHealth -= damageDealer.GetDamage();
+        }
 
         if(maxHealth <= 0) {
-            Destroy(gameObject);
+            int point = GameSession.GetInstance().GetPoint();
+            point += enemyDestroyPoints;
+            GameSession.GetInstance().SetPoint(point);
+            StartCoroutine(OnDestroyObject());
         }
+    }
+
+    IEnumerator OnDestroyObject() {
+        yield return new WaitForSeconds(0.2f);
+        enemyAudio.PlayDestroySFX();
+        GameObject explosionObject = Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity);
+        Destroy(explosionObject, .3f);
+        Destroy(gameObject);
     }
 }
